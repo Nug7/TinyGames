@@ -1,43 +1,29 @@
-
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
+#include "main.hpp"
 #include <cmath>
-#include <ctime>
-#include <cstdlib>
 
 
-////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
-///
-////////////////////////////////////////////////////////////
+
 int main()
 {
     std::srand(static_cast<unsigned int>(std::time(NULL)));
-
-    // Define some constants
     const float pi = 3.14159f;
     const int gameWidth = 800;
     const int gameHeight = 600;
     sf::Vector2f paddleSize(25, 100);
     float ballRadius = 10.f;
 
-    // Create the window of the application
+    //创建应用窗口
     sf::RenderWindow window(sf::VideoMode(gameWidth, gameHeight, 32), "SFML Pong",
                             sf::Style::Titlebar | sf::Style::Close);
     window.setVerticalSyncEnabled(true);
 
-    // Load the sounds used in the game
+    //加载音频资源
     sf::SoundBuffer ballSoundBuffer;
     if (!ballSoundBuffer.loadFromFile("resources/ball.wav"))
         return EXIT_FAILURE;
     sf::Sound ballSound(ballSoundBuffer);
 
-    // Create the left paddle
+    // 创建左边球拍
     sf::RectangleShape leftPaddle;
     leftPaddle.setSize(paddleSize - sf::Vector2f(3, 3));
     leftPaddle.setOutlineThickness(3);
@@ -45,7 +31,7 @@ int main()
     leftPaddle.setFillColor(sf::Color(100, 100, 200));
     leftPaddle.setOrigin(paddleSize / 2.f);
 
-    // Create the right paddle
+    // 创建右边球拍
     sf::RectangleShape rightPaddle;
     rightPaddle.setSize(paddleSize - sf::Vector2f(3, 3));
     rightPaddle.setOutlineThickness(3);
@@ -53,7 +39,7 @@ int main()
     rightPaddle.setFillColor(sf::Color(200, 100, 100));
     rightPaddle.setOrigin(paddleSize / 2.f);
 
-    // Create the ball
+    // 创建小球
     sf::CircleShape ball;
     ball.setRadius(ballRadius - 3);
     ball.setOutlineThickness(3);
@@ -61,12 +47,12 @@ int main()
     ball.setFillColor(sf::Color::White);
     ball.setOrigin(ballRadius / 2, ballRadius / 2);
 
-    // Load the text font
+    // 加载字体资源
     sf::Font font;
     if (!font.loadFromFile("resources/sansation.ttf"))
         return EXIT_FAILURE;
 
-    // Initialize the pause message
+    // 初始化暂停信息
     sf::Text pauseMessage;
     pauseMessage.setFont(font);
     pauseMessage.setCharacterSize(40);
@@ -74,7 +60,7 @@ int main()
     pauseMessage.setColor(sf::Color::White);
     pauseMessage.setString("Welcome to SFML pong!\nPress space to start the game");
 
-    // Define the paddles properties
+    // 定义球拍属性
     sf::Clock AITimer;
     const sf::Time AITime   = sf::seconds(0.1f);
     const float paddleSpeed = 400.f;
@@ -86,11 +72,11 @@ int main()
     bool isPlaying = false;
     while (window.isOpen())
     {
-        // Handle events
+        // 处理事件Event
         sf::Event event;
         while (window.pollEvent(event))
         {
-            // Window closed or escape key pressed: exit
+            // 关闭窗口 或 Esc键 ：退出
             if ((event.type == sf::Event::Closed) ||
                ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)))
             {
@@ -98,24 +84,24 @@ int main()
                 break;
             }
 
-            // Space key pressed: play
+            // 空格键: 程序运行
             if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space))
             {
                 if (!isPlaying)
                 {
-                    // (re)start the game
+                    // 启动/重启 游戏
                     isPlaying = true;
                     clock.restart();
 
-                    // Reset the position of the paddles and ball
+                    // 重置球拍和小球的位置
                     leftPaddle.setPosition(10 + paddleSize.x / 2, gameHeight / 2);
                     rightPaddle.setPosition(gameWidth - 10 - paddleSize.x / 2, gameHeight / 2);
                     ball.setPosition(gameWidth / 2, gameHeight / 2);
 
-                    // Reset the ball angle
+                    // 重置小球角度
                     do
                     {
-                        // Make sure the ball initial angle is not too much vertical
+                        // 保证小球初始角度不要太垂直
                         ballAngle = (std::rand() % 360) * 2 * pi / 360;
                     }
                     while (std::abs(std::cos(ballAngle)) < 0.7f);
@@ -127,7 +113,7 @@ int main()
         {
             float deltaTime = clock.restart().asSeconds();
 
-            // Move the player's paddle
+            // 移动玩家球拍（左）
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) &&
                (leftPaddle.getPosition().y - paddleSize.y / 2 > 5.f))
             {
@@ -139,14 +125,14 @@ int main()
                 leftPaddle.move(0.f, paddleSpeed * deltaTime);
             }
 
-            // Move the computer's paddle
+            // 移动电脑球拍（右）
             if (((rightPaddleSpeed < 0.f) && (rightPaddle.getPosition().y - paddleSize.y / 2 > 5.f)) ||
                 ((rightPaddleSpeed > 0.f) && (rightPaddle.getPosition().y + paddleSize.y / 2 < gameHeight - 5.f)))
             {
                 rightPaddle.move(0.f, rightPaddleSpeed * deltaTime);
             }
 
-            // Update the computer's paddle direction according to the ball position
+            //根据小球位置更新电脑球拍方向
             if (AITimer.getElapsedTime() > AITime)
             {
                 AITimer.restart();
@@ -158,7 +144,7 @@ int main()
                     rightPaddleSpeed = 0.f;
             }
 
-            // Move the ball
+            // 移动小球
             float factor = ballSpeed * deltaTime;
             ball.move(std::cos(ballAngle) * factor, std::sin(ballAngle) * factor);
 
@@ -218,23 +204,23 @@ int main()
             }
         }
 
-        // Clear the window
+        // 清屏
         window.clear(sf::Color(50, 200, 50));
 
         if (isPlaying)
         {
-            // Draw the paddles and the ball
+            // 绘制球拍和小球
             window.draw(leftPaddle);
             window.draw(rightPaddle);
             window.draw(ball);
         }
         else
         {
-            // Draw the pause message
+            // 绘制暂停信息
             window.draw(pauseMessage);
         }
 
-        // Display things on screen
+        // 屏幕显示
         window.display();
     }
 
